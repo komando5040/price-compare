@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مقایسه‌گر قیمت</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>مقایسه‌گر قیمت</h1>
+        <form method="POST">
+            <input type="text" name="query" value="{{ query }}" placeholder="نام کالا را وارد کنید..." required>
+            <button type="submit">جستجو</button>
+        </form>
+
+        {% if error_message %}
+        <div class="error-box">
+            <p>{{ error_message }}</p>
+        </div>
+        {% endif %}
+
+        {% if results %}
+        <div class="results-summary">
+            <p>{{ results|length }} نتیجه برای "{{ query }}"</p>
+        </div>
+
+        <div class="results-list">
+            {% for item in results %}
+            <div class="result-card {% if item.is_cheapest %}cheapest{% endif %} {% if item.is_outlier %}outlier{% endif %}">
+                <div class="result-title">
+                    {{ item.title }}
+                    {% if item.source_type == 'personal_ad' %}
+                    <span class="badge personal">آگهی شخصی</span>
+                    {% endif %}
+                </div>
+
+                <div class="result-price">
+                    {{ "{:,}".format(item.price) }} تومان
+                    {% if item.is_cheapest %}
+                    <span class="badge cheapest-badge">⭐ ارزان‌ترین</span>
+                    {% elif item.is_outlier %}
+                    <span class="badge outlier-badge">⚠️ قیمت غیرعادی - بررسی شود</span>
+                    {% elif item.price_diff > 0 %}
+                    <span class="price-diff">(+{{ "{:,}".format(item.price_diff) }} تومان)</span>
+                    {% endif %}
+                </div>
+
+                <div class="result-meta">
+                    <span class="source">{{ item.seller }}</span>
+                    {% if item.condition %}
+                    <span class="condition">{{ item.condition }}</span>
+                    {% endif %}
+                </div>
+
+                <a href="{{ item.link }}" target="_blank" class="result-link">مشاهده و خرید ←</a>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
